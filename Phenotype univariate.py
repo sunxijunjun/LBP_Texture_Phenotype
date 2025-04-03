@@ -105,6 +105,7 @@ _, vif_df_4, df_multiv_results_4 = run_logit_with_dropped_vars(
     title_suffix="without facet_tropism_presence "
 )
 
+
 _, vif_df_5, df_multiv_results_5 = run_logit_with_dropped_vars(
     data_copy,
     base_vars=new_logit_sig_vars,
@@ -168,4 +169,18 @@ _, vif_df_12, df_multiv_results_12 = run_logit_with_dropped_vars(
 )
 
 df_dimension = pd.read_csv("inputs/merged_GSTAT.csv")
+
+backward_final_model, backward_selected_vars, stepwise_summary = run_backward_stepwise_logit(
+    data=data_copy,
+    base_vars=new_logit_sig_vars,
+    y_col='Group',
+    p_threshold=0.05
+)
+
+print("var left：", backward_selected_vars)
+print(backward_final_model.summary())
+summary_table = backward_final_model.summary2().tables[1]
+summary_table.reset_index(inplace=True)
+summary_table.rename(columns={'index': 'Variable'}, inplace=True)
+
 

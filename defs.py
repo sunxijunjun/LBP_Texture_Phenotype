@@ -450,7 +450,7 @@ def stepwise_logit_forward_backward(data, candidate_vars, target, threshold_in=0
                     remaining.append(worst_var)
                     changed = True
                     if verbose:
-                        print(f"❌ Dropping '{worst_var}' with p = {worst_p:.4f}")
+                        print(f" Dropping '{worst_var}' with p = {worst_p:.4f}")
             except:
                 pass
 
@@ -593,3 +593,49 @@ def add_degeneration_score_columns(df):
 
     return df
 
+
+def run_backward_stepwise_logit(data, base_vars, y_col='outcome', p_threshold=0.05, verbose=True):
+    """
+    自动进行 backward stepwise logistic regression。
+
+    参数:
+    - data: 数据框（包含 y 和 X）
+    - base_vars: 初始变量列表
+    - y_col: 因变量的列名
+    - p_threshold: 剔除变量的 p 值阈值
+    - verbose: 是否打印过程
+
+    返回:
+    - final_model: 最后拟合的logit模型
+    - remaining_vars: 最后保留的变量列表
+    - summary_df: 各步p值变化记录
+    """
+    remaining_vars = base_vars.copy()
+    steps = []
+
+    while True:
+        X = data[remaining_vars]
+        X = sm.add_constant(X)
+        y = data[y_col]
+
+        model = sm.Logit(y, X).fit(disp=0)
+        pvalues = model.pvalues.drop("const")
+        max_p = pvalues.max()
+        worst_var = pvalues.idxmax()
+
+        steps.append(pvalues.to_frame(name="p_value").T)
+
+        if verbose:
+            print(f"Max p-value: {max_p:.4f} ({worst_var})")
+
+        if max_p > p_threshold:
+            if verbose:
+                print(f"Dropping '{worst_var}'")
+            remaining_vars.remove(worst_var)
+        else:
+            break
+
+    summary_df = pd.concat(steps).reset_index(drop=True)
+    final_model = sm.Logit(y, sm.add_constant(data[remaining_vars])).fit()
+
+    return final_model, remaining_vars, summary_df
