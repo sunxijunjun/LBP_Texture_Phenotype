@@ -54,5 +54,24 @@
 - Further validation and interpretation of the results are in progress.
 
 
+# Updates made on 3rd, April:
+
+## 5. reconstructed the feature columns
+- Reconstructed the feature columns representing various degenerative phenotypes by summarizing the presence and overall severity of each phenotype, regardless of vertebral level. Before constructing these features, it was observed that the same degenerative phenotype often appeared at multiple vertebral levels within the same patient, leading to data collinearity.
+- A univariate analysis was conducted again on the reconstructed feature columns, and the results are as follows:
+- ![image](https://github.com/user-attachments/assets/3b50523f-ae7f-4977-acd6-c42bc948734e)
+- Selected 7 variables with p < 0.2 from newly created vars:
+['schmorls_nodes_presence', 'hiz_presence', 'facet_tropism_presence', 'pfirrmann_presence', 'facet_tropism_score', 'facet_degeneration_score', 'pfirrmann_score']
+- 'Facet_tropism_presence' and 'facet_tropism_score' were highly correlated, so only one was used for modeling to reduce collinearity. Both yielded similar MLR results, and the model using 'facet_tropism_score' is presented here.
+- ![image](https://github.com/user-attachments/assets/7c43ec82-a243-4aa4-86f6-15a6c415fd96)
+- MLR Adjusted for age and gender:
+- ![image](https://github.com/user-attachments/assets/322d2cdb-7cb0-4561-ae73-ca81c18950b8)
+- MLR Adjusted for age, gender and other co var including ["BMI", "Education", "Occupation_LBP_Baseline_Nominal", "Marital_status_LBP_Baseline", "Smoking_Baseline", "Alcohol_baseline"]:
+- ![image](https://github.com/user-attachments/assets/d649a44b-85ed-41e9-8f5c-4c584175cf07)
+- The current analysis reveals that the Pfirrmann score differs significantly between CLBP patients and asymptomatic individuals.
+- TODO: adjust MLR by other vertebral body dimension. Since both vertebral dimensions and degeneration labels are level-specific, the next step is to explore how dimensions of each vertebra relates to localized degenerative changes.
+
+
+
 
 
