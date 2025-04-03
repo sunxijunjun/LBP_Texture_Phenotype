@@ -526,4 +526,70 @@ def run_logit_with_dropped_vars(data, base_vars, vars_to_drop, title_suffix, sta
     print(df_results)
     return data_copy, vif_df, df_results
 
+def add_degeneration_presence_columns(df):
+    """添加 degeneration presence 变量（是否存在任一类型的退变）"""
+
+    modic_vars = ["Modic_change_L3", "Modic_change_L4", "Modic_change_L5", "Modic_change_S1"]
+    schmorls_vars = ["Schmorls_nodes_L3", "Schmorls_nodes_L4", "Schmorls_nodes_L5"]
+    hiz_vars = ["HIZ_L3_4", "HIZ_L4_5", "HIZ_L5_S1"]
+    facet_tropism_vars = ["Facet_tropism_L3_4", "Facet_tropism_L4_5", "Facet_tropism_L5_S1"]
+    facet_degeneration_vars = [
+        "facet_degeneration_L3_4_right", "facet_degeneration_L3_4_left",
+        "facet_degeneration_L4_5_right", "facet_degeneration_L4_5_left",
+        "facet_degeneration_L5_S1_right", "facet_degeneration_L5_S1_left"
+    ]
+    pfirrmann_vars = [
+        "Pffirmann_L3_4_grading", "Pffirmann_L4_5_grading", "Pffirmann_L5_S1_grading"
+    ]
+
+    all_vars = modic_vars + schmorls_vars + hiz_vars + facet_tropism_vars + facet_degeneration_vars + pfirrmann_vars
+    df[all_vars] = df[all_vars].fillna(0)
+
+    df["modic_change_presence"] = df[modic_vars].gt(0).any(axis=1).astype(int)
+    df["schmorls_nodes_presence"] = df[schmorls_vars].gt(0).any(axis=1).astype(int)
+    df["hiz_presence"] = df[hiz_vars].gt(0).any(axis=1).astype(int)
+    df["facet_tropism_presence"] = df[facet_tropism_vars].gt(0).any(axis=1).astype(int)
+    df["facet_degeneration_presence"] = df[facet_degeneration_vars].gt(0).any(axis=1).astype(int)
+    df["pfirrmann_presence"] = df[pfirrmann_vars].gt(1).any(axis=1).astype(int)  # I=正常，II及以上为退变
+
+    presence_cols = [
+        "modic_change_presence", "schmorls_nodes_presence", "hiz_presence",
+        "facet_tropism_presence", "facet_degeneration_presence", "pfirrmann_presence"
+    ]
+    df["degeneration_score"] = df[presence_cols].sum(axis=1)
+    df["degeneration_presence"] = (df["degeneration_score"] > 0).astype(int)
+    df["total_degeneration_presence"] = df[presence_cols].sum(axis=1)
+
+    return df
+
+
+def add_degeneration_score_columns(df):
+    """添加 degeneration score 总分列（表示严重程度）"""
+    modic_vars = ["Modic_change_L3", "Modic_change_L4", "Modic_change_L5", "Modic_change_S1"]
+    schmorls_vars = ["Schmorls_nodes_L3", "Schmorls_nodes_L4", "Schmorls_nodes_L5"]
+    hiz_vars = ["HIZ_L3_4", "HIZ_L4_5", "HIZ_L5_S1"]
+    facet_tropism_vars = ["Facet_tropism_L3_4", "Facet_tropism_L4_5", "Facet_tropism_L5_S1"]
+    facet_degeneration_vars = [
+        "facet_degeneration_L3_4_right", "facet_degeneration_L3_4_left",
+        "facet_degeneration_L4_5_right", "facet_degeneration_L4_5_left",
+        "facet_degeneration_L5_S1_right", "facet_degeneration_L5_S1_left"
+    ]
+    pfirrmann_vars = [
+        "Pffirmann_L3_4_grading", "Pffirmann_L4_5_grading", "Pffirmann_L5_S1_grading"
+    ]
+
+    df["modic_score"] = df[modic_vars].sum(axis=1)
+    df["schmorls_score"] = df[schmorls_vars].sum(axis=1)
+    df["hiz_score"] = df[hiz_vars].sum(axis=1)
+    df["facet_tropism_score"] = df[facet_tropism_vars].sum(axis=1)
+    df["facet_degeneration_score"] = df[facet_degeneration_vars].sum(axis=1)
+    df["pfirrmann_score"] = df[pfirrmann_vars].sum(axis=1)
+
+    score_cols = [
+        "modic_score", "schmorls_score", "hiz_score",
+        "facet_tropism_score", "facet_degeneration_score", "pfirrmann_score"
+    ]
+    df["global_degeneration_score"] = df[score_cols].sum(axis=1)
+
+    return df
 
