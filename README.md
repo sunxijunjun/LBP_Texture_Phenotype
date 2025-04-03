@@ -70,6 +70,9 @@
 - ![image](https://github.com/user-attachments/assets/d649a44b-85ed-41e9-8f5c-4c584175cf07)
 - The current analysis reveals that the Pfirrmann score differs significantly between CLBP patients and asymptomatic individuals.
 - TODO: adjust MLR by other vertebral body dimension. Since both vertebral dimensions and degeneration labels are level-specific, the next step is to explore how dimensions of each vertebra relates to localized degenerative changes.
+## 6. Backward stepwise logistic regression
+- A backward stepwise logistic regression was conducted using variables with univariate LR significance (['schmorls_nodes_presence', 'hiz_presence', 'facet_tropism_presence', 'pfirrmann_presence', 'facet_tropism_score', 'facet_degeneration_score', 'pfirrmann_score']). pfirrmann_score was the only variable retained in the final model. This indicates that higher pfirrmann scores were significantly associated with increased odds of the outcome (CLBP).
+- ![image](https://github.com/user-attachments/assets/f55abb98-6134-44c6-8c77-450275e1577b)
 
 
 
