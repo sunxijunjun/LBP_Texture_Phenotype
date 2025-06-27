@@ -639,3 +639,76 @@ def run_backward_stepwise_logit(data, base_vars, y_col='outcome', p_threshold=0.
     final_model = sm.Logit(y, sm.add_constant(data[remaining_vars])).fit()
 
     return final_model, remaining_vars, summary_df
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+def plot_density_heatmap(
+    df,
+    x: str,
+    y: str,
+    hue: str = None,
+    cmap: str = 'viridis',
+    bw_adjust: float = 1.5,
+    levels: int = 100,
+    figsize=(6, 5)
+):
+    """
+    Plots KDE-based 2D density heatmaps with optional group-wise subplots.
+
+    Parameters:
+        df (pd.DataFrame): Input data.
+        x (str): Column for x-axis (continuous).
+        y (str): Column for y-axis (continuous).
+        hue (str, optional): Column to split subplots by group.
+        cmap (str): Colormap to use (default: 'viridis').
+        bw_adjust (float): KDE bandwidth scaling (default: 1.5 for smoother edges).
+        levels (int): Number of contour levels.
+        figsize (tuple): Size of each subplot.
+    """
+    xlim = (df[x].min(), df[x].max())
+    ylim = (df[y].min(), df[y].max())
+
+    if hue:
+        unique_hues = df[hue].dropna().unique()
+        fig, axes = plt.subplots(1, len(unique_hues), figsize=(figsize[0] * len(unique_hues), figsize[1]), constrained_layout=True)
+        if len(unique_hues) == 1:
+            axes = [axes]
+        for ax, group in zip(axes, unique_hues):
+            sub = df[df[hue] == group]
+            sns.kdeplot(
+                data=sub,
+                x=x, y=y,
+                fill=True,
+                cmap=cmap,
+                ax=ax,
+                thresh=0,
+                levels=levels,
+                bw_adjust=bw_adjust,
+                clip=(xlim, ylim)
+            )
+            ax.set_title(f"{hue} = {group}")
+            ax.set_xlim(xlim)
+            ax.set_ylim(ylim)
+            ax.set_xlabel(x)
+            ax.set_ylabel(y)
+    else:
+        plt.figure(figsize=figsize)
+        sns.kdeplot(
+            data=df,
+            x=x, y=y,
+            fill=True,
+            cmap=cmap,
+            thresh=0,
+            levels=levels,
+            bw_adjust=bw_adjust,
+            clip=(xlim, ylim)
+        )
+        plt.title("2D Density Heatmap")
+        plt.xlabel(x)
+        plt.ylabel(y)
+        plt.xlim(xlim)
+        plt.ylim(ylim)
+
+    plt.show()
+
