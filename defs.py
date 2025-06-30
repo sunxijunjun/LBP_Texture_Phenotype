@@ -712,3 +712,57 @@ def plot_density_heatmap(
 
     plt.show()
 
+
+import os
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy.stats import pointbiserialr
+
+
+def point_biserial_analysis(data: pd.DataFrame, binary_col: str, continuous_col: str, output_folder: str,
+                            title: str = ""):
+    """
+    Performs point-biserial correlation analysis, shows and saves a grouped scatter + line plot.
+
+    Parameters:
+    - data: pandas DataFrame containing the binary and continuous variable
+    - binary_col: column name of the binary variable (e.g., 'Exam')
+    - continuous_col: column name of the continuous variable (e.g., 'Maths Test')
+    - output_folder: path to save the plot image
+    - title: optional plot title
+    """
+
+    # Create output folder if needed
+    os.makedirs(output_folder, exist_ok=True)
+
+    # Convert binary to numeric if necessary
+    binary_map = {v: i for i, v in enumerate(data[binary_col].unique())}
+    numeric_binary = data[binary_col].map(binary_map)
+
+    # Correlation analysis
+    corr, pval = pointbiserialr(numeric_binary, data[continuous_col])
+    print(f"Point-biserial correlation (r): {corr:.4f}, p-value: {pval:.4g}")
+
+    # Plot
+    plt.figure(figsize=(6, 5))
+    sns.stripplot(x=binary_col, y=continuous_col, data=data, jitter=True, color='black', alpha=0.6)
+
+    means = data.groupby(binary_col)[continuous_col].mean()
+    plt.plot(means.index, means.values, color='black', linewidth=1.5)
+
+    plot_title = title or f'Point-Biserial Correlation: r = {corr:.2f}, p = {pval:.3g}'
+    plt.title(plot_title)
+    plt.xlabel(binary_col)
+    plt.ylabel(continuous_col)
+    plt.grid(False)
+    plt.tight_layout()
+
+    # Save and show
+    filename = f"point_biserial_{binary_col}_vs_{continuous_col}.png"
+    save_path = os.path.join(output_folder, filename)
+    plt.savefig(save_path, dpi=300)
+    plt.show()
+    print(f"Plot saved to: {save_path}")
+
+
